@@ -4,7 +4,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures::{future::try_join_all, stream, FutureExt, Sink, SinkExt};
+use futures::{future::try_join_all, FutureExt, Sink};
 use itertools::Itertools;
 use tokio::sync::{
     mpsc as tokio_mpsc,
@@ -12,12 +12,15 @@ use tokio::sync::{
     oneshot,
 };
 use uuid::Uuid;
-use vector_core::event::Metric;
+use vector_buffers::{
+    topology::channel::{BufferSender, SenderAdapter},
+    WhenFull,
+};
 
 use super::{schema::events::TapPatterns, ShutdownRx, ShutdownTx};
 use crate::{
     config::{ComponentKey, OutputId},
-    event::{Event, EventArray, EventContainer, LogEvent, TraceEvent},
+    event::{EventArray, LogArray, MetricArray, TraceArray},
     topology::{fanout, fanout::ControlChannel, TapResource, WatchRx},
 };
 
@@ -77,10 +80,10 @@ pub enum TapNotification {
 /// to be communicated back to the client to alert them about the status of the tap request.
 #[derive(Debug)]
 pub enum TapPayload {
-    Log(OutputId, LogEvent),
-    Metric(OutputId, Metric),
+    Log(OutputId, LogArray),
+    Metric(OutputId, MetricArray),
     Notification(String, TapNotification),
-    Trace(OutputId, TraceEvent),
+    Trace(OutputId, TraceArray),
 }
 
 impl TapPayload {
@@ -97,6 +100,7 @@ impl TapPayload {
 
 /// A `TapSink` is used as an output channel for a topology component, and receives
 /// `Event`s. If these are of type `Event::LogEvent`, they are relayed to the tap client.
+#[derive(Clone)]
 pub struct TapSink {
     tap_tx: TapSender,
     output_id: OutputId,
@@ -108,7 +112,7 @@ impl TapSink {
     }
 }
 
-impl Sink<Event> for TapSink {
+impl Sink<EventArray> for TapSink {
     type Error = ();
 
     /// This sink is always ready to accept, because TapSink should never cause back-pressure.
@@ -118,11 +122,11 @@ impl Sink<Event> for TapSink {
     }
 
     /// Immediately send the event to the tap_tx, only if it has room. Otherwise just drop it
-    fn start_send(self: Pin<&mut Self>, event: Event) -> Result<(), Self::Error> {
-        let payload = match event {
-            Event::Log(log) => TapPayload::Log(self.output_id.clone(), log),
-            Event::Metric(metric) => TapPayload::Metric(self.output_id.clone(), metric),
-            Event::Trace(trace) => TapPayload::Trace(self.output_id.clone(), trace),
+    fn start_send(self: Pin<&mut Self>, events: EventArray) -> Result<(), Self::Error> {
+        let payload = match events {
+            EventArray::Logs(logs) => TapPayload::Log(self.output_id.clone(), logs),
+            EventArray::Metrics(metrics) => TapPayload::Metric(self.output_id.clone(), metrics),
+            EventArray::Traces(traces) => TapPayload::Trace(self.output_id.clone(), traces),
         };
 
         if let Err(TrySendError::Closed(payload)) = self.tap_tx.try_send(payload) {
@@ -267,12 +271,15 @@ async fn tap_handler(
                             // reconfigured with the same id as a previous, and we are not
                             // getting involved in config diffing at this point.
                             let sink_id = Uuid::new_v4().to_string();
-                            let sink = TapSink::new(tx.clone(), output_id.clone())
-                                .with_flat_map(|events: EventArray| stream::iter(events.into_events().map(Ok)));
+                            let sink = TapSink::new(tx.clone(), output_id.clone());
+                            // TODO: it is a channel internally, just need to dig it out
+                            // TODO: don't want to emit event with DropNewest
+                            let sink = SenderAdapter::opaque(sink);
+                            let sink = BufferSender::new(sink, WhenFull::DropNewest);
 
                             // Attempt to connect the sink.
                             match control_tx
-                                .send(fanout::ControlMessage::Add(ComponentKey::from(sink_id.as_str()), Box::pin(sink)))
+                                .send(fanout::ControlMessage::Add(ComponentKey::from(sink_id.as_str()), sink))
                             {
                                 Ok(_) => {
                                     debug!(
@@ -357,13 +364,12 @@ mod tests {
     use crate::api::schema::events::{create_events_stream, log, metric};
     use crate::config::Config;
     use crate::transforms::log_to_metric::{GaugeConfig, LogToMetricConfig, MetricConfig};
-    use futures::SinkExt;
     use tokio::sync::watch;
 
     use super::*;
     use crate::api::schema::events::notification::{EventNotification, EventNotificationType};
     use crate::api::schema::events::output::OutputEventsPayload;
-    use crate::event::{Metric, MetricKind, MetricValue};
+    use crate::event::{LogEvent, Metric, MetricKind, MetricValue};
     use crate::sinks::blackhole::BlackholeConfig;
     use crate::sources::demo_logs::{DemoLogsConfig, OutputFormat};
     use crate::test_util::start_topology;
@@ -447,8 +453,8 @@ mod tests {
             MetricValue::Counter { value: 1.0 },
         );
 
-        let _ = fanout.send(vec![metric_event].into()).await.unwrap();
-        let _ = fanout.send(vec![log_event].into()).await.unwrap();
+        let _ = fanout.send(vec![metric_event].into()).await;
+        let _ = fanout.send(vec![log_event].into()).await;
 
         // 3rd payload should be the metric event
         assert!(matches!(
