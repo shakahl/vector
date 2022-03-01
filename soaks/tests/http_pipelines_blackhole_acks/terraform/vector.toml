@@ -19,6 +19,7 @@ acknowledgements = true
 
 [transforms.preprocessing]
 type = "remap"
+runtime = "vm"
 inputs = ["logs"]
 source = '''
 ., err = parse_json(.message)
@@ -75,6 +76,7 @@ filter.source = "source:nginx"
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_client_ip} %{_ident} %{_auth} \\[%{_date_access}\\] \"(?>%{_method} |)%{_url}(?> %{_version}|)\" %{_status_code} (?>%{_bytes_written}|-)","%{access.common} (%{number:duration:scale(1000000000)} )?\"%{_referer}\" \"%{_user_agent}\"( \"%{_x_forwarded_for}\")?.*","%{date(\"yyyy/MM/dd HH:mm:ss\"):date_access} \\[%{word:level}\\] %{data:error.message}(, %{data})?"],
@@ -101,6 +103,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.client) {
 .custom.network.client.ip = .custom.client
@@ -109,6 +112,7 @@ if exists(.custom.client) {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .request,
 patterns: ["(?>%{_method} |)%{_url}(?> %{_version}|)"],
@@ -124,6 +128,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.http.url); err == null) {
   .custom.http.url_details = details
@@ -132,6 +137,7 @@ if (details, err = parse_url(.custom.http.url); err == null) {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
   .custom.http.useragent_details = details
@@ -140,6 +146,7 @@ if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date_access) {
 .timestamp = .custom.date_access
@@ -148,6 +155,7 @@ if exists(.custom.date_access) {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 .custom.http.status_category = "OK"
@@ -162,6 +170,7 @@ if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.http.status_category) ?? string(.custom.level) ?? ""
 if status == "" {
@@ -196,6 +205,7 @@ filter.source = "source:redis"
 
 [[transforms.processing.logs.pipelines.redis.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_pid}:%{_role} %{_date} %{_severity} %{data:message}"],
@@ -212,6 +222,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.redis.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date) {
 .timestamp = .custom.date
@@ -220,6 +231,7 @@ if exists(.custom.date) {
 
 [[transforms.processing.logs.pipelines.redis.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@severity: \".\"") {
 .custom.redis.severity = "debug"
@@ -234,6 +246,7 @@ if match_datadog_query(., "@severity: \".\"") {
 
 [[transforms.processing.logs.pipelines.redis.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.redis.severity) ?? ""
 if status == "" {
@@ -268,6 +281,7 @@ filter.source = "source:consul"
 
 [[transforms.processing.logs.pipelines.consul.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["==>\\s+(?>%{_status}:|)%{data:message}","(\\s*|\\t*)%{_date_2} %{_hostname} %{_app}\\[%{_thread_id}]:\\s+%{data:message}","(\\s*|\\t*)(%{_date}|%{_date_3}) \\[%{_status}\\] %{_app}:( %{_event}:)?%{data:message}"],
@@ -290,6 +304,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.consul.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -298,6 +313,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.consul.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -332,6 +348,7 @@ filter.source = "source:python"
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["(%{_python_prefix}|%{_datadog_prefix})\\s+%{data}Traceback \\(most recent call last\\):\\s*%{data:error.stack}","(%{_python_prefix}|%{_datadog_prefix})\\s+%{data}","%{date(\"yyyy-MM-dd'T'HH:mm:ss','SSS\"):timestamp}\\s+%{word:levelname}\\s+%{data}((\\n|\\t)%{data:error.stack})?"],
@@ -348,6 +365,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -356,6 +374,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.levelname) ?? ""
 if status == "" {
@@ -385,6 +404,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.traceback) {
 .custom.error.stack = .custom.traceback
@@ -393,6 +413,7 @@ if exists(.custom.traceback) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.name) {
 .custom.logger.name = .custom.name
@@ -401,6 +422,7 @@ if exists(.custom.name) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.threadName) {
 .custom.logger.thread_name = .custom.threadName
@@ -409,6 +431,7 @@ if exists(.custom.threadName) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .error.stack,
 patterns: ["File \"%{notSpace:filename}\", line %{integer:lineno}.*\\s+%{regex(\"[a-zA-Z]*Error[a-zA-Z]*\"):error.kind}: %{data:error.message}"],
@@ -421,6 +444,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.trace_id) {
 .trace_id = .custom.dd.trace_id
@@ -429,6 +453,7 @@ if exists(.custom.dd.trace_id) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.env) {
 .custom.env = .custom.dd.env
@@ -437,6 +462,7 @@ if exists(.custom.dd.env) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.version) {
 .custom.version = .custom.dd.version
@@ -445,6 +471,7 @@ if exists(.custom.dd.version) {
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.service) {
 .service = .custom.dd.service
@@ -458,6 +485,7 @@ filter.source = "source:rabbitmq"
 
 [[transforms.processing.logs.pipelines.rabbitmq.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["=%{_status} REPORT(====)? (%{_date_d}|%{_date_dd}) =(==)?\\s*%{data:message}","%{_date_latest}\\s\\[%{_status}\\]\\s*%{data:message}"],
@@ -475,6 +503,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.rabbitmq.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -483,6 +512,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.rabbitmq.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.status) ?? ""
 if status == "" {
@@ -512,6 +542,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.rabbitmq.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.message) {
 .message = .custom.message
@@ -525,6 +556,7 @@ filter.source = "source:zookeeper"
 
 [[transforms.processing.logs.pipelines.zookeeper.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["(%{_date_ms}|%{_duration})\\s+\\[%{_thread_name}\\]\\s+%{_status}\\s+%{_logger_name}\\s*(%{_context}\\s*)?- %{data:msg}((\\n|\\t)%{data:error.stack})?","%{_date} %{_status}\\s+%{_logger_name}:%{_line}\\s+- %{data:msg}((\\n|\\t)%{data:error.stack})?"],
@@ -546,6 +578,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.zookeeper.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .error.stack,
 patterns: ["%{notSpace:error.kind}: %{data:error.message}(\\n|\\t).*"],
@@ -558,6 +591,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.zookeeper.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -566,6 +600,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.zookeeper.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.status) ?? ""
 if status == "" {
@@ -595,6 +630,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.zookeeper.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -608,6 +644,7 @@ filter.source = "source:elasticsearch"
 
 [[transforms.processing.logs.pipelines.elasticsearch.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["\\[(?>%{_date}|%{_date_format2})\\]\\[%{_status}\\s*\\]\\[index.search.slowlog.%{_operation}\\] (\\[%{_node}\\] )?\\[%{_index}\\]\\[%{_shard}\\] took\\[.*\\], took_millis\\[%{_duration}\\].*","\\[(?>%{_date}|%{_date_format2})\\]\\[%{_status}\\s*\\]\\[index.indexing.slowlog.%{_operation}\\] (\\[%{_node}\\] )?\\[%{_index}\\] took\\[.*\\], took_millis\\[%{_duration}\\].*","\\[(?>%{_date}|%{_date_format2})\\]\\[%{_status}\\s*\\]\\[%{_logger}\\s*\\]\\s*(\\[%{_node}\\])?.*"],
@@ -631,6 +668,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.elasticsearch.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -639,6 +677,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.elasticsearch.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -668,6 +707,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.elasticsearch.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.nodeId) {
 .custom.node_name = .custom.nodeId
@@ -681,6 +721,7 @@ filter.source = "source:kafka"
 
 [[transforms.processing.logs.pipelines.kafka.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["(%{_date_ms}|%{_duration})\\s+\\[%{_thread_name}\\]\\s+%{_status}\\s+%{_logger_name}\\s*(%{_context}\\s*)?- %{data:msg}((\\n|\\t)%{data:error.stack})?","%{_date} %{_status}\\s+%{_logger_name}:%{_line}\\s+- %{data:msg}((\\n|\\t)%{data:error.stack})?","\\[%{_date_ms}\\] %{_status} %{data:msg} \\(%{_logger_name}\\)"],
@@ -703,6 +744,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.kafka.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .error.stack,
 patterns: ["%{notSpace:error.kind}: %{data:error.message}(\\n|\\t).*"],
@@ -715,6 +757,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.kafka.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -723,6 +766,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.kafka.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.status) ?? ""
 if status == "" {
@@ -752,6 +796,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.kafka.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -765,6 +810,7 @@ filter.source = "source:couchdb"
 
 [[transforms.processing.logs.pipelines.couchdb.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["\\[%{_date_access}\\] \\[%{_level}\\] %{notSpace} %{_client_ip} - - %{_method} %{_url} %{_status_code}.*","\\[%{_level}\\] %{_date} %{_user}@%{_client_ip} %{notSpace} (-------- CRASH REPORT\\s*%{data:error.stack}|%{data})","%{date(\"yyyy-MM-dd HH:mm:ss.SSS\"):date_access} \\[%{_level}\\] .*"],
@@ -787,6 +833,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.couchdb.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date_access) {
 .timestamp = .custom.date_access
@@ -795,6 +842,7 @@ if exists(.custom.date_access) {
 
 [[transforms.processing.logs.pipelines.couchdb.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -824,6 +872,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.couchdb.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.http.url); err == null) {
   .custom.http.url_details = details
@@ -837,6 +886,7 @@ filter.source = "source:docker"
 
 [[transforms.processing.logs.pipelines.docker.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_level}%{_kube_date}\\s+%{_thread_id} %{_logger_name}:%{_line}\\].*","%{_client_ip} %{_ident} %{_auth} \\[%{_date_access}\\] \"(?>%{_method} |)%{_url}(?> %{_version}|)\" %{_status_code} (?>%{_bytes_written}|-) \"%{_referer}\" \"%{_user_agent}\"( \"%{_x_forwarded_for}\")?.*","(?>\\[ %{word:process.name} \\] )?%{_dd_date} \\| %{word:level} \\| \\(%{_logger_name}:%{_line} in %{word:datadog.process}\\) \\| .*"],
@@ -869,6 +919,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.docker.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -877,6 +928,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.docker.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -911,6 +963,7 @@ filter.source = "source:(agent OR datadog-agent OR datadog-agent-cluster-worker 
 
 [[transforms.processing.logs.pipelines.datadog_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["        %{date(\"yyyy-MM-dd HH:mm:ss z\"):timestamp} \\| %{notSpace:agent} \\| %{word:level} \\| \\(%{notSpace:filename}:%{number:lineno} in %{word:process}\\) \\|( %{data} \\|)?( - \\|)?( \\(%{notSpace:pyFilename}:%{number:pyLineno}\\) \\|)?%{data}","%{date(\"yyyy-MM-dd HH:mm:ss z\"):timestamp} \\| %{word:level} \\| \\(%{notSpace:filename}:%{number:lineno} in %{word:process}\\)%{data}","     %{date(\"yyyy-MM-dd HH:mm:ss z\"):timestamp} \\| %{notSpace:agent} \\| %{word:level}\\s+\\| %{word:class} \\| %{data}"],
@@ -925,6 +978,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.datadog_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -933,6 +987,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.datadog_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -967,6 +1022,7 @@ filter.source = "source:ruby"
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.logger) {
 .custom.logger.name = .custom.logger
@@ -975,6 +1031,7 @@ if exists(.custom.logger) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.thread) {
 .custom.logger.thread_name = .custom.thread
@@ -983,6 +1040,7 @@ if exists(.custom.thread) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.exception) {
 .custom.error.stack = .custom.exception
@@ -993,6 +1051,7 @@ if exists(.custom.exception) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["(?>%{_ruby_log_prefix}\\s+|%{_trace_rule}\\s+)?%{_activate_status} %{integer:http.status_code}(?: (?:%{word}|Internal Server Error))? in %{number:duration}ms \\((?>Views: %{number:views}ms \\| )?ActiveRecord: %{number:activerecord}ms\\)","(?>%{_ruby_log_prefix}\\s+|%{_trace_rule}\\s+)?%{_activate_status} by %{notSpace:processor}.*","(?>%{_ruby_log_prefix}\\s+|%{_trace_rule}\\s+)?%{_activate_status} %{word:http.method} \"%{notSpace:http.url_details.path}\" for %{ipOrHost:network.client.ip}.*","%{_datadog_prefix} %{data}(?>(\\n|\\t)%{data:error.stack})?","(?>%{_ruby_log_prefix}\\s+|%{_trace_rule}\\s+)?Received: %{data::json}","%{_ruby_log_prefix}\\s+%{data:error.message}(?>(\\n|\\t)%{data:error.stack})?","%{data}"],
@@ -1020,6 +1079,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date) {
 .timestamp = .custom.date
@@ -1028,6 +1088,7 @@ if exists(.custom.date) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1057,6 +1118,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .error.stack,
 patterns: ["%{notSpace:error.kind}: %{data:error.message}(\\n|\\t).*"],
@@ -1069,6 +1131,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.method) {
 .custom.http.method = .custom.method
@@ -1077,6 +1140,7 @@ if exists(.custom.method) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.path) {
 .custom.http.url_details.path = .custom.path
@@ -1085,6 +1149,7 @@ if exists(.custom.path) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.status) {
 .custom.http.status_code = .custom.status
@@ -1093,6 +1158,7 @@ if exists(.custom.status) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.trace_id) {
 .trace_id = .custom.dd.trace_id
@@ -1101,6 +1167,7 @@ if exists(.custom.dd.trace_id) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.env) {
 .custom.env = .custom.dd.env
@@ -1109,6 +1176,7 @@ if exists(.custom.dd.env) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.version) {
 .custom.version = .custom.dd.version
@@ -1117,6 +1185,7 @@ if exists(.custom.dd.version) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.service) {
 .service = .custom.dd.service
@@ -1125,6 +1194,7 @@ if exists(.custom.dd.service) {
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.duration*1000000; err == null) {
   .custom.duration = result
@@ -1138,6 +1208,7 @@ filter.source = "source:vault"
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_date}\\s+\\[%{_level}\\]\\s+%{notSpace:vault.service}:\\s+%{data:message}","%{_date}\\s+\\[%{_level}\\]\\s+%{data:message}"],
@@ -1153,6 +1224,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -1161,6 +1233,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1190,6 +1263,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.message) {
 .message = .custom.message
@@ -1198,6 +1272,7 @@ if exists(.custom.message) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.auth.display_name) {
 .custom.usr.id = .custom.auth.display_name
@@ -1208,6 +1283,7 @@ if exists(.custom.auth.display_name) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.request.path) {
 .custom.http.url_details.path = .custom.request.path
@@ -1216,6 +1292,7 @@ if exists(.custom.request.path) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.request.data.http_status_code) {
 .custom.http.status_code = .custom.request.data.http_status_code
@@ -1224,6 +1301,7 @@ if exists(.custom.request.data.http_status_code) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.request.remote_address) {
 .custom.network.client.ip = .custom.request.remote_address
@@ -1232,6 +1310,7 @@ if exists(.custom.request.remote_address) {
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 
 #TODO: geo-ip-parser
@@ -1239,6 +1318,7 @@ source = '''
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.request.operation) {
 .custom.http.method = .custom.request.operation
@@ -1252,6 +1332,7 @@ filter.source = "source:nginx-ingress-controller"
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_client_ip}(?: - \\[%{notSpace}\\])? - %{_ident} \\[%{_date_access}\\] \"(?>%{_method} |)%{_url}(?> %{_version}|)\" %{_status_code} (?>%{_bytes_written}|-) \"%{_referer}\" \"%{_user_agent}\" %{_request_size} %{_duration} \\[%{_proxy_name}\\](?: \\[%{_alternate_proxy_name}?\\])? (?:%{_upstream_ip}:%{_upstream_port}|-)(?:, %{notSpace})?(?:, %{notSpace})? (?:%{_bytes_read}|-)(?:, %{number}|, -)?(?:, %{number}|, -)? (?:%{_upstream_time}|-)(?:, %{number}|, -)?(?:, %{number}|, -)? (?:%{_upstream_status}|-)(?:, %{number}|, -)?(?:, %{number}|, -)?(?: %{_request_id})?.*","%{date(\"yyyy/MM/dd HH:mm:ss\"):date_access} \\[%{word:level}\\] %{data:error.message}(, %{data})?","%{regex(\"\\\\w\"):level}%{date(\"MMdd HH:mm:ss.SSSSSS\"):date_access}\\s+%{number} %{notSpace:logger.name}:%{number:lineno}\\] .*"],
@@ -1287,6 +1368,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.client) {
 .custom.network.client.ip = .custom.client
@@ -1295,6 +1377,7 @@ if exists(.custom.client) {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .request,
 patterns: ["(?>%{_method} |)%{_url}(?> %{_version}|)"],
@@ -1310,6 +1393,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.http.url); err == null) {
   .custom.http.url_details = details
@@ -1318,6 +1402,7 @@ if (details, err = parse_url(.custom.http.url); err == null) {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
   .custom.http.useragent_details = details
@@ -1326,6 +1411,7 @@ if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date_access) {
 .timestamp = .custom.date_access
@@ -1334,6 +1420,7 @@ if exists(.custom.date_access) {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 .custom.http.status_category = "OK"
@@ -1348,6 +1435,7 @@ if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.http.status_category) ?? string(.custom.level) ?? ""
 if status == "" {
@@ -1382,6 +1470,7 @@ filter.source = "source:mysql"
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["(%{_timestamp}\\s+|(?:%{_rawtimestamp}\\s+)?)%{integer:thread_id}\\s+%{_operation}\\s+%{_raw_query}","(%{_timestamp}|%{_timestamp_mariadb_post_1015}) %{integer:thread_id} \\[%{_severity}\\] %{data:message}","%{_rawtimestamp}\\s+(?>InnoDB:|\\[%{_severity}\\])\\s+%{data:message}","(%{_time_line}\\s)?(%{_user_line}\\s)?\\# %{data}(%{_instance_line}\\s)?%{_set_line}\\s%{_query_line}"],
@@ -1411,6 +1500,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .db.slow_statement,
 patterns: ["%{word:db.operation} .*"],
@@ -1423,6 +1513,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.db.slow_statement) {
 .custom.db.statement = .custom.db.slow_statement
@@ -1431,6 +1522,7 @@ if exists(.custom.db.slow_statement) {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.Query_time * 1000000000; err == null) {
   .custom.duration = result
@@ -1439,6 +1531,7 @@ if (result, err = .custom.Query_time * 1000000000; err == null) {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.mysql.query.timestamp * 1000; err == null) {
   .custom.db.date = result
@@ -1447,6 +1540,7 @@ if (result, err = .custom.mysql.query.timestamp * 1000; err == null) {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.Bytes_sent) {
 .custom.network.bytes_written = .custom.Bytes_sent
@@ -1455,6 +1549,7 @@ if exists(.custom.Bytes_sent) {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.Bytes_received) {
 .custom.network.bytes_read = .custom.Bytes_received
@@ -1463,6 +1558,7 @@ if exists(.custom.Bytes_received) {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.db.date) {
 .timestamp = .custom.db.date
@@ -1471,6 +1567,7 @@ if exists(.custom.db.date) {
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.db.severity) ?? ""
 if status == "" {
@@ -1505,6 +1602,7 @@ filter.source = "source:cluster-autoscaler"
 
 [[transforms.processing.logs.pipelines.kubernetes_cluster_autoscaler.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{regex(\"\\\\w\"):level}%{date(\"MMdd HH:mm:ss.SSSSSS\"):timestamp}\\s+%{number:logger.thread_id} %{notSpace:logger.name}:%{number:lineno}\\] %{data:msg}"],
@@ -1517,6 +1615,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.kubernetes_cluster_autoscaler.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -1525,6 +1624,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.kubernetes_cluster_autoscaler.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1554,6 +1654,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.kubernetes_cluster_autoscaler.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -1567,6 +1668,7 @@ filter.source = "source:aws-alb-ingress-controller"
 
 [[transforms.processing.logs.pipelines.aws_alb_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{regex(\"\\\\w\"):level}%{date(\"MMdd HH:mm:ss.SSSSSS\"):timestamp}\\s+%{number:logger.thread_id} %{notSpace:logger.name}:%{number:lineno}\\] %{data:msg}"],
@@ -1579,6 +1681,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.aws_alb_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -1587,6 +1690,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.aws_alb_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1616,6 +1720,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.aws_alb_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -1629,6 +1734,7 @@ filter.source = "source:proxysql"
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_longDate}\\s+%{_logger}\\:\\s+%{_level}\\s+%{data:message}","%{_longDate}\\s+%{_level}\\s+%{data:message}","%{_longDate}.*%{_level}%{data:message}","%{data:proxysql_service}\\s+%{_revision}\\s+--\\s+%{notSpace:logger.name}\\s+--\\s+%{_textDate}"],
@@ -1649,6 +1755,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .duration,
 patterns: ["%{number:duration:scale(1000000)}ms","%{number:duration:scale(1000000000)}s","%{number:duration:scale(1000)}us","%{number:duration:scale(1)}ns"],
@@ -1664,6 +1771,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .client_addr,
 patterns: ["%{ipOrHost:network.client.ip}:%{number:network.client.port}"],
@@ -1676,6 +1784,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .proxy_addr,
 patterns: ["%{ipOrHost:network.proxysql.ip}:%{number:network.proxysql.port}"],
@@ -1688,6 +1797,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .extra_info,
 patterns: ["%{notSpace:logger.name}\\:%{number:logger.line_number}\\:%{notSpace:logger.method_name}"],
@@ -1700,6 +1810,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.schemaname) {
 .custom.db.instance = .custom.schemaname
@@ -1708,6 +1819,7 @@ if exists(.custom.schemaname) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.username) {
 .custom.db.user = .custom.username
@@ -1716,6 +1828,7 @@ if exists(.custom.username) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.thread_id) {
 .custom.logger.thread_id = .custom.thread_id
@@ -1724,6 +1837,7 @@ if exists(.custom.thread_id) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .client,
 patterns: ["%{ipOrHost:network.client.ip}:%{number:network.client.port}"],
@@ -1736,6 +1850,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.duration_us * 1000; err == null) {
   .custom.duration = result
@@ -1744,6 +1859,7 @@ if (result, err = .custom.duration_us * 1000; err == null) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.query) {
 .custom.db.statement = .custom.query
@@ -1752,6 +1868,7 @@ if exists(.custom.query) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.rows_affected) {
 .custom.db.rows_affected = .custom.rows_affected
@@ -1760,6 +1877,7 @@ if exists(.custom.rows_affected) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.rows_sent) {
 .custom.db.rows_sent = .custom.rows_sent
@@ -1768,6 +1886,7 @@ if exists(.custom.rows_sent) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .server,
 patterns: ["%{ipOrHost:network.proxysql.ip}:%{number:network.proxysql.port}"],
@@ -1780,6 +1899,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1809,6 +1929,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date) {
 .timestamp = .custom.date
@@ -1821,6 +1942,7 @@ if exists(.custom.date) {
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.message) {
 .message = .custom.message
@@ -1834,6 +1956,7 @@ filter.source = "source:(azure OR azure.alertsmanagement OR azure.analysisservic
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -1842,6 +1965,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1871,6 +1995,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.category) {
 .custom.evt.category = .custom.category
@@ -1879,6 +2004,7 @@ if exists(.custom.category) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.operationName) {
 .custom.evt.name = .custom.operationName
@@ -1887,6 +2013,7 @@ if exists(.custom.operationName) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.resultType) {
 .custom.evt.outcome = .custom.resultType
@@ -1895,6 +2022,7 @@ if exists(.custom.resultType) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.callerIpAddress) {
 .custom.network.client.ip = .custom.callerIpAddress
@@ -1903,6 +2031,7 @@ if exists(.custom.callerIpAddress) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.durationMs * 1000000; err == null) {
   .custom.duration = result
@@ -1911,6 +2040,7 @@ if (result, err = .custom.durationMs * 1000000; err == null) {
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.identity.authorization.evidence.principalId) {
 .custom.usr.id = .custom.identity.authorization.evidence.principalId
@@ -1924,6 +2054,7 @@ filter.source = "source:azure.web"
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -1932,6 +2063,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -1961,6 +2093,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.category) {
 .custom.evt.category = .custom.category
@@ -1969,6 +2102,7 @@ if exists(.custom.category) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.operationName) {
 .custom.evt.name = .custom.operationName
@@ -1977,6 +2111,7 @@ if exists(.custom.operationName) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.resultType) {
 .custom.evt.outcome = .custom.resultType
@@ -1985,6 +2120,7 @@ if exists(.custom.resultType) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.callerIpAddress) {
 .custom.network.client.ip = .custom.callerIpAddress
@@ -1993,6 +2129,7 @@ if exists(.custom.callerIpAddress) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.durationMs * 1000000; err == null) {
   .custom.duration = result
@@ -2001,6 +2138,7 @@ if (result, err = .custom.durationMs * 1000000; err == null) {
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.identity.authorization.evidence.principalId) {
 .custom.usr.id = .custom.identity.authorization.evidence.principalId
@@ -2014,6 +2152,7 @@ filter.source = "source:azure.storage"
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -2022,6 +2161,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -2051,6 +2191,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.category) {
 .custom.evt.category = .custom.category
@@ -2059,6 +2200,7 @@ if exists(.custom.category) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.operationName) {
 .custom.evt.name = .custom.operationName
@@ -2067,6 +2209,7 @@ if exists(.custom.operationName) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.resultType) {
 .custom.evt.outcome = .custom.resultType
@@ -2075,6 +2218,7 @@ if exists(.custom.resultType) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.callerIpAddress) {
 .custom.network.client.ip = .custom.callerIpAddress
@@ -2083,6 +2227,7 @@ if exists(.custom.callerIpAddress) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.durationMs * 1000000; err == null) {
   .custom.duration = result
@@ -2091,6 +2236,7 @@ if (result, err = .custom.durationMs * 1000000; err == null) {
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.identity.authorization.evidence.principalId) {
 .custom.usr.id = .custom.identity.authorization.evidence.principalId
@@ -2104,6 +2250,7 @@ filter.source = "source:azure.network"
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -2112,6 +2259,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -2141,6 +2289,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.properties.eventProperties.title) {
 .message = .custom.properties.eventProperties.title
@@ -2149,6 +2298,7 @@ if exists(.custom.properties.eventProperties.title) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.category) {
 .custom.evt.category = .custom.category
@@ -2157,6 +2307,7 @@ if exists(.custom.category) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.operationName) {
 .custom.evt.name = .custom.operationName
@@ -2165,6 +2316,7 @@ if exists(.custom.operationName) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.resultType) {
 .custom.evt.outcome = .custom.resultType
@@ -2173,6 +2325,7 @@ if exists(.custom.resultType) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.callerIpAddress) {
 .custom.network.client.ip = .custom.callerIpAddress
@@ -2181,6 +2334,7 @@ if exists(.custom.callerIpAddress) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.durationMs * 1000000; err == null) {
   .custom.duration = result
@@ -2189,6 +2343,7 @@ if (result, err = .custom.durationMs * 1000000; err == null) {
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.identity.authorization.evidence.principalId) {
 .custom.usr.id = .custom.identity.authorization.evidence.principalId
@@ -2202,6 +2357,7 @@ filter.source = "source:azure.compute"
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -2210,6 +2366,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -2239,6 +2396,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.properties.eventProperties.title) {
 .message = .custom.properties.eventProperties.title
@@ -2247,6 +2405,7 @@ if exists(.custom.properties.eventProperties.title) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.category) {
 .custom.evt.category = .custom.category
@@ -2255,6 +2414,7 @@ if exists(.custom.category) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.operationName) {
 .custom.evt.name = .custom.operationName
@@ -2263,6 +2423,7 @@ if exists(.custom.operationName) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.resultType) {
 .custom.evt.outcome = .custom.resultType
@@ -2271,6 +2432,7 @@ if exists(.custom.resultType) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.callerIpAddress) {
 .custom.network.client.ip = .custom.callerIpAddress
@@ -2279,6 +2441,7 @@ if exists(.custom.callerIpAddress) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.durationMs * 1000000; err == null) {
   .custom.duration = result
@@ -2287,6 +2450,7 @@ if (result, err = .custom.durationMs * 1000000; err == null) {
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.identity.authorization.evidence.principalId) {
 .custom.usr.id = .custom.identity.authorization.evidence.principalId
@@ -2300,6 +2464,7 @@ filter.source = "source:etcd"
 
 [[transforms.processing.logs.pipelines.etcd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_date} %{word: level} \\| (%{notSpace:package}: )?%{data:message}"],
@@ -2313,6 +2478,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.etcd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date) {
 .timestamp = .custom.date
@@ -2321,6 +2487,7 @@ if exists(.custom.date) {
 
 [[transforms.processing.logs.pipelines.etcd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.message) {
 .message = .custom.message
@@ -2329,6 +2496,7 @@ if exists(.custom.message) {
 
 [[transforms.processing.logs.pipelines.etcd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -2363,6 +2531,7 @@ filter.source = "source:(admission-webhook OR api-server OR cert-manager-acmesol
 
 [[transforms.processing.logs.pipelines.glog_pipeline.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{regex(\"[IWEF]\"):level}%{date(\"MMdd HH:mm:ss.SSSSSS\"):timestamp}\\s+%{number:logger.thread_id} %{notSpace:logger.name}:%{number:lineno}\\] %{data:msg}"],
@@ -2375,6 +2544,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.glog_pipeline.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -2383,6 +2553,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.glog_pipeline.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -2412,6 +2583,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.glog_pipeline.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -2425,6 +2597,7 @@ filter.source = "source:auth0"
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.data.date) {
 .timestamp = .custom.data.date
@@ -2433,6 +2606,7 @@ if exists(.custom.data.date) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.data.ip) {
 .custom.network.client.ip = .custom.data.ip
@@ -2441,6 +2615,7 @@ if exists(.custom.data.ip) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 
 #TODO: geo-ip-parser
@@ -2448,6 +2623,7 @@ source = '''
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.data.user_agent) {
 .custom.http.useragent = .custom.data.user_agent
@@ -2456,6 +2632,7 @@ if exists(.custom.data.user_agent) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
   .custom.http.useragent_details = details
@@ -2464,6 +2641,7 @@ if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.data.user_name) {
 .custom.usr.id = .custom.data.user_name
@@ -2472,6 +2650,7 @@ if exists(.custom.data.user_name) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.data.user_name) {
 .custom.usr.name = .custom.data.user_name
@@ -2480,6 +2659,7 @@ if exists(.custom.data.user_name) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.data.details.request.auth.user.email) {
 .custom.usr.email = .custom.data.details.request.auth.user.email
@@ -2488,6 +2668,7 @@ if exists(.custom.data.details.request.auth.user.email) {
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 
 #TODO: lookup-processor
@@ -2495,6 +2676,7 @@ source = '''
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 
 #TODO: lookup-processor
@@ -2502,6 +2684,7 @@ source = '''
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.message) {
 .message = .custom.message
@@ -2519,6 +2702,7 @@ filter.source = "source:(kube_scheduler OR kube-scheduler)"
 
 [[transforms.processing.logs.pipelines.kube_scheduler__glog_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{regex(\"\\\\w\"):level}%{date(\"MMdd HH:mm:ss.SSSSSS\"):timestamp}\\s+%{number:logger.thread_id} %{notSpace:logger.name}:%{number:lineno}\\] %{data:msg}"],
@@ -2531,6 +2715,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.kube_scheduler__glog_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.timestamp) {
 .timestamp = .custom.timestamp
@@ -2539,6 +2724,7 @@ if exists(.custom.timestamp) {
 
 [[transforms.processing.logs.pipelines.kube_scheduler__glog_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -2568,6 +2754,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.kube_scheduler__glog_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -2581,6 +2768,7 @@ filter.source = "source:amazon-ecs-agent"
 
 [[transforms.processing.logs.pipelines.aws_ecs_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 .custom.http.status_category = "OK"
@@ -2595,6 +2783,7 @@ if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 
 [[transforms.processing.logs.pipelines.aws_ecs_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.http.status_category) ?? string(.custom.level) ?? ""
 if status == "" {
@@ -2624,6 +2813,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.aws_ecs_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -2632,6 +2822,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.aws_ecs_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -2645,6 +2836,7 @@ filter.source = "source:nodejs"
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.msg) {
 .message = .custom.msg
@@ -2653,6 +2845,7 @@ if exists(.custom.msg) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["(?>\\[%{data}dd.trace_id=%{word:dd.trace_id} dd.span_id=%{word:dd.span_id}\\]\\s*)?\\[%{date(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"):time}\\]\\s+\\[%{word:level}\\] %{data}","%{word:http.method} %{notSpace:http.url} %{number:http.status_code} (-|%{number:network.bytes_written}) - (%{number:duration:scale(1000000)} ms|%{number:duration:scale(1000000000)} s)","%{ipOrHost:network.client.ip} %{notSpace:http.ident:nullIf(\"-\")} %{notSpace:http.auth:nullIf(\"-\")} \\[%{date(\"dd/MMM/yyyy:HH:mm:ss Z\"):date_access}\\] \"(?>%{word:http.method} |)%{notSpace:http.url}(?> HTTP\\/%{regex(\"\\\\d+\\\\.\\\\d+\"):http.version}|)\" %{number:http.status_code} (?>%{number:network.bytes_written}|-) \"%{notSpace:http.referer}\" \"%{regex(\"[^\\\\\\\"]*\"):http.useragent}\".*","(?>\\[%{data}dd.trace_id=%{word:dd.trace_id} dd.span_id=%{word:dd.span_id}\\]\\s*)?%{data::json}"],
@@ -2668,6 +2861,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -2676,6 +2870,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 .custom.http.status_category = "OK"
@@ -2690,6 +2885,7 @@ if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@level:10") {
 .custom.bunyan_level = "trace"
@@ -2708,6 +2904,7 @@ if match_datadog_query(., "@level:10") {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.http.status_category) ?? string(.custom.bunyan_level) ?? string(.custom.level) ?? ""
 if status == "" {
@@ -2737,6 +2934,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.trace_id) {
 .trace_id = .custom.dd.trace_id
@@ -2745,6 +2943,7 @@ if exists(.custom.dd.trace_id) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.http.url); err == null) {
   .custom.http.url_details = details
@@ -2753,6 +2952,7 @@ if (details, err = parse_url(.custom.http.url); err == null) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
   .custom.http.useragent_details = details
@@ -2761,6 +2961,7 @@ if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.env) {
 .custom.env = .custom.dd.env
@@ -2769,6 +2970,7 @@ if exists(.custom.dd.env) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.version) {
 .custom.version = .custom.dd.version
@@ -2777,6 +2979,7 @@ if exists(.custom.dd.version) {
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.service) {
 .service = .custom.dd.service
@@ -2790,6 +2993,7 @@ filter.source = "source:postgresql"
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_prefix} %{_severity}:\\s+duration:\\s+%{_duration}\\s+ms\\s+(%{regex(\"statement:\")}\\s+%{_raw_query}|%{data:msg})","%{_prefix} %{_severity}:\\s+(%{regex(\"statement:\")}\\s+%{_raw_query}|%{data:msg})","(%{_timestamp}|%{_timestamp_ms} \\[%{_proc_id}])\\s+%{_severity}:\\s+(%{regex(\"statement:\")}\\s+%{_raw_query}|%{data:msg})"],
@@ -2816,6 +3020,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .db.statement,
 patterns: ["%{word:db.operation} .*"],
@@ -2828,6 +3033,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.db.date) {
 .timestamp = .custom.db.date
@@ -2836,6 +3042,7 @@ if exists(.custom.db.date) {
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.db.severity) ?? ""
 if status == "" {
@@ -2865,6 +3072,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.db.instance) {
 .custom.db = .custom.db.instance
@@ -2873,6 +3081,7 @@ if exists(.custom.db.instance) {
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.duration * 1000000; err == null) {
   .custom.duration = result
@@ -2886,6 +3095,7 @@ filter.source = "source:cassandra"
 
 [[transforms.processing.logs.pipelines.cassandra.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_prefix} %{regex(\"Compacting\"):db.operation}.* %{_keyspace}\\/%{_table}:%{data:partition_key} \\(%{_bytes} bytes\\)","%{_prefix} %{regex(\"Flushing\"):db.operation}.*\\(Keyspace='%{_keyspace}', ColumnFamily='%{_table}'\\) %{data}: %{_onheap_total}\\/%{_offheap_total}, live: %{_onheap_live}\\/%{_offheap_live}, flushing: %{_onheap_flush}\\/%{_offheap_flush}, this: %{_onheap_this}\\/%{_offheap_this}","%{_prefix} %{regex(\"Enqueuing\"):db.operation}.* of %{_keyspace}: %{_onheap_bytes}%{data} \\(%{_onheap_pct}%\\) on-heap, %{_offheap_bytes} \\(%{_offheap_pct}%\\).*","%{_prefix} %{regex(\"Writing\"):db.operation}.*-%{_keyspace}%{data}\\(%{number:cassandra.bytes:scale(1000000)}%{data}, %{integer:cassandra.ops} ops, %{_onheap_pct}%\\/%{_offheap_pct}.*","%{_prefix} Completed %{regex(\"flushing\"):db.operation} %{_sstable} \\(%{number:cassandra.bytes_kb}KiB\\) for commitlog %{data:commitlog}","%{_prefix}\\s+%{regex(\"Compacted\"):db.operation}.* to \\[%{_sstable}\\].\\s+%{notSpace:cassandra.bytes_in} bytes to %{notSpace:cassandra.bytes_out} \\(\\~%{integer:cassandra.percent_of_orig}% of original\\) in %{notSpace:cassandra.duration_ms}ms = %{number:cassandra.speed_mb}MB/s.\\s+%{notSpace:cassandra.pkeys_in} total partitions merged to %{notSpace:cassandra.pkeys_out}\\.\\s+Partition merge counts were %{data:cassandra.merge_cnt}","%{_prefix} G.* %{integer:duration:scale(1000000)}ms. %{data}: %{integer:cassandra.eden.orig_bytes} -> %{integer:cassandra.eden.new_bytes}; %{data}: %{integer:cassandra.oldgen.orig_bytes} -> %{integer:cassandra.oldgen.new_bytes};.*","%{_prefix} %{word:cassandra.pool}\\s*(?>%{integer:cassandra.cache_used}\\s*%{integer:cassandra.cache_size}\\s*all|%{integer:cassandra.threads.active}\\s*%{integer:cassandra.threads.pending}\\s*%{integer:cassandra.threads.completed}\\s*%{integer:cassandra.threads.blocked}\\s*%{integer:cassandra.threads.all_time_blocked}|%{integer:cassandra.threads.active}\\s*%{integer:cassanadra.threads.pending})","%{_prefix} %{integer:db.operations} operations were slow in the last %{integer:elapsed_time:scale(1000000)} msecs:\\n%{data}","%{_prefix} %{data:msg}"],
@@ -2930,6 +3140,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.cassandra.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.db.date) {
 .timestamp = .custom.db.date
@@ -2938,6 +3149,7 @@ if exists(.custom.db.date) {
 
 [[transforms.processing.logs.pipelines.cassandra.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.db.severity) ?? ""
 if status == "" {
@@ -2972,6 +3184,7 @@ filter.source = "source:httpd"
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_client_ip} %{_ident} %{_auth} \\[%{_date_access}\\] \"(?>%{_method} |)%{_url}(?> %{_version}|)\" %{_status_code} (?>%{_bytes_written}|-)","%{access.common} \"%{_referer}\" \"%{_user_agent}\""],
@@ -2996,6 +3209,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
   .custom.http.useragent_details = details
@@ -3004,6 +3218,7 @@ if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.http.url); err == null) {
   .custom.http.url_details = details
@@ -3012,6 +3227,7 @@ if (details, err = parse_url(.custom.http.url); err == null) {
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date_access) {
 .timestamp = .custom.date_access
@@ -3020,6 +3236,7 @@ if exists(.custom.date_access) {
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 .custom.http.status_category = "OK"
@@ -3034,6 +3251,7 @@ if match_datadog_query(., "@http.status_code:[200 TO 299]") {
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.http.status_category) ?? ""
 if status == "" {
@@ -3068,6 +3286,7 @@ filter.source = "source:azure.recoveryservices"
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.time) {
 .timestamp = .custom.time
@@ -3076,6 +3295,7 @@ if exists(.custom.time) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? ""
 if status == "" {
@@ -3105,6 +3325,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.category) {
 .custom.evt.category = .custom.category
@@ -3113,6 +3334,7 @@ if exists(.custom.category) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.operationName) {
 .custom.evt.name = .custom.operationName
@@ -3121,6 +3343,7 @@ if exists(.custom.operationName) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.resultType) {
 .custom.evt.outcome = .custom.resultType
@@ -3129,6 +3352,7 @@ if exists(.custom.resultType) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.callerIpAddress) {
 .custom.network.client.ip = .custom.callerIpAddress
@@ -3137,6 +3361,7 @@ if exists(.custom.callerIpAddress) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (result, err = .custom.durationMs * 1000000; err == null) {
   .custom.duration = result
@@ -3145,6 +3370,7 @@ if (result, err = .custom.durationMs * 1000000; err == null) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.identity.authorization.evidence.principalId) {
 .custom.usr.id = .custom.identity.authorization.evidence.principalId
@@ -3153,6 +3379,7 @@ if exists(.custom.identity.authorization.evidence.principalId) {
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.properties.Entity_Name) {
 .custom.entity_name = .custom.properties.Entity_Name
@@ -3166,6 +3393,7 @@ filter.source = "source:csharp"
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.logger) {
 .custom.logger.name = .custom.logger
@@ -3174,6 +3402,7 @@ if exists(.custom.logger) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.thread) {
 .custom.logger.thread_name = .custom.thread
@@ -3182,6 +3411,7 @@ if exists(.custom.thread) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.exception) {
 .custom.error.stack = .custom.exception
@@ -3192,6 +3422,7 @@ if exists(.custom.exception) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .message,
 patterns: ["%{_date} %{_status} \\[%{_thread_name}\\] %{_logger_name} %{_method}:%{_line} - %{data:message}((\\n|\\t)%{data:error.stack})?","(%{_date}|%{_date_ms}) %{_status}\\s+%{data:message}((\\n|\\t)%{data:error.stack})?","%{date(\"yyyy-MM-dd HH:mm:ss.SSS Z\"):date} \\[%{_status}\\] %{data}","(%{date(\"yyyy-MM-dd HH:mm:ss.SSSS\"):date}|%{date(\"yyyy-MM-dd HH:mm:ss.SSS\"):date}|%{date(\"yyyy-MM-dd HH:mm:ss.SS\"):date}|%{date(\"yyyy-MM-dd HH:mm:ss.SSSSS\"):date})\\|%{_status}\\|%{notSpace:logger.name}\\|\\{%{data}\\}.*","%{date(\"yyyy-MM-dd HH:mm:ss,SSS\"):date} \\[%{number}\\] %{_status}\\s+%{notSpace:logger.name} \\[%{notSpace}\\] \\{%{data}\\}.*"],
@@ -3215,6 +3446,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.date) {
 .timestamp = .custom.date
@@ -3227,6 +3459,7 @@ if exists(.custom.date) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 status = string(.custom.level) ?? string(.custom.Level) ?? string(.custom.@l) ?? ""
 if status == "" {
@@ -3256,6 +3489,7 @@ if starts_with(status, "e", case_sensitive: false) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 custom, err = parse_groks(value: .error.stack,
 patterns: ["%{notSpace:error.kind}: %{data:error.message}(\\n|\\t).*"],
@@ -3268,6 +3502,7 @@ aliases: {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.trace_id) {
 .trace_id = .custom.dd.trace_id
@@ -3284,6 +3519,7 @@ if exists(.custom.dd.trace_id) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.RenderedMessage) {
 .message = .custom.RenderedMessage
@@ -3298,6 +3534,7 @@ if exists(.custom.RenderedMessage) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.env) {
 .custom.env = .custom.dd.env
@@ -3314,6 +3551,7 @@ if exists(.custom.dd.env) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.version) {
 .custom.version = .custom.dd.version
@@ -3330,6 +3568,7 @@ if exists(.custom.dd.version) {
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if exists(.custom.dd.service) {
 .service = .custom.dd.service
@@ -3351,6 +3590,7 @@ filter.source = "source:browser"
 
 [[transforms.processing.logs.pipelines.web_browser_logs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.http.url); err == null) {
   .custom.http.url_details = details
@@ -3359,6 +3599,7 @@ if (details, err = parse_url(.custom.http.url); err == null) {
 
 [[transforms.processing.logs.pipelines.web_browser_logs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
   .custom.http.useragent_details = details
@@ -3367,6 +3608,7 @@ if (details, err = parse_user_agent(.custom.http.useragent); err == null) {
 
 [[transforms.processing.logs.pipelines.web_browser_logs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.view.url); err == null) {
   .custom.view.url_details = details
@@ -3375,6 +3617,7 @@ if (details, err = parse_url(.custom.view.url); err == null) {
 
 [[transforms.processing.logs.pipelines.web_browser_logs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 if (details, err = parse_url(.custom.view.referrer); err == null) {
   .custom.view.referrer_details = details
@@ -3383,6 +3626,7 @@ if (details, err = parse_url(.custom.view.referrer); err == null) {
 
 [[transforms.processing.logs.pipelines.web_browser_logs.transforms]]
 type = "remap"
+runtime = "vm"
 source = '''
 #TODO: geo-ip-parser
 '''

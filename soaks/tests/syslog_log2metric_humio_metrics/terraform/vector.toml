@@ -19,6 +19,7 @@ mode = "tcp"
 
 [transforms.remap]
 type = "remap"
+runtime = "vm"
 inputs = ["syslog"]
 source = """
     . = parse_syslog!(.message)

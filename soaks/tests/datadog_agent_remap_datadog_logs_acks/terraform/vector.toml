@@ -18,6 +18,7 @@ address = "0.0.0.0:8282"
 
 [transforms.parse_message]
 type = "remap"
+runtime = "vm"
 inputs = ["datadog_agent"]
 source = '''
 pyld, err = parse_json(.message)

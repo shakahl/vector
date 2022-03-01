@@ -20,6 +20,7 @@ type = "splunk_hec"
 
 [transforms.timestamp_field]
 type = "remap"
+runtime = "vm"
 inputs = ["splunk"]
 source = '''
 .Timestamp = del(.timestamp)
@@ -27,6 +28,7 @@ source = '''
 
 [transforms.splunk_fields]
 type = "remap"
+runtime = "vm"
 inputs = ["splunk"]
 
 source = '''

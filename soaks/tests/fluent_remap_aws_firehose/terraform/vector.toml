@@ -17,6 +17,7 @@ address = "0.0.0.0:8282"
 
 [transforms.remap]
 type = "remap"
+runtime = "vm"
 inputs = ["fluent"]
 source = """
 event = del(.event)

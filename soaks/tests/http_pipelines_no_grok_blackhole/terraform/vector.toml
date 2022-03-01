@@ -18,6 +18,7 @@ encoding = "text"
 
 [transforms.preprocessing]
 type = "remap"
+runtime = "vm"
 inputs = ["logs"]
 source = '''
 ., err = parse_json(.message)
@@ -74,6 +75,7 @@ filter.source = "source:nginx"
 
 [[transforms.processing.logs.pipelines.nginx.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.redis]
@@ -83,6 +85,7 @@ filter.source = "source:redis"
 
 [[transforms.processing.logs.pipelines.redis.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.consul]
@@ -92,6 +95,7 @@ filter.source = "source:consul"
 
 [[transforms.processing.logs.pipelines.consul.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.python]
@@ -101,6 +105,7 @@ filter.source = "source:python"
 
 [[transforms.processing.logs.pipelines.python.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.rabbitmq]
@@ -110,6 +115,7 @@ filter.source = "source:rabbitmq"
 
 [[transforms.processing.logs.pipelines.rabbitmq.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.zookeeper]
@@ -119,6 +125,7 @@ filter.source = "source:zookeeper"
 
 [[transforms.processing.logs.pipelines.zookeeper.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.elasticsearch]
@@ -128,6 +135,7 @@ filter.source = "source:elasticsearch"
 
 [[transforms.processing.logs.pipelines.elasticsearch.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.kafka]
@@ -137,6 +145,7 @@ filter.source = "source:kafka"
 
 [[transforms.processing.logs.pipelines.kafka.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.couchdb]
@@ -146,6 +155,7 @@ filter.source = "source:couchdb"
 
 [[transforms.processing.logs.pipelines.couchdb.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.docker]
@@ -155,6 +165,7 @@ filter.source = "source:docker"
 
 [[transforms.processing.logs.pipelines.docker.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.datadog_agent]
@@ -164,6 +175,7 @@ filter.source = "source:(agent OR datadog-agent OR datadog-agent-cluster-worker 
 
 [[transforms.processing.logs.pipelines.datadog_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.ruby]
@@ -173,6 +185,7 @@ filter.source = "source:ruby"
 
 [[transforms.processing.logs.pipelines.ruby.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.vault]
@@ -182,6 +195,7 @@ filter.source = "source:vault"
 
 [[transforms.processing.logs.pipelines.vault.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.nginx_ingress_controller]
@@ -191,6 +205,7 @@ filter.source = "source:nginx-ingress-controller"
 
 [[transforms.processing.logs.pipelines.nginx_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.mysql]
@@ -200,6 +215,7 @@ filter.source = "source:mysql"
 
 [[transforms.processing.logs.pipelines.mysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.kubernetes_cluster_autoscaler]
@@ -209,6 +225,7 @@ filter.source = "source:cluster-autoscaler"
 
 [[transforms.processing.logs.pipelines.kubernetes_cluster_autoscaler.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.aws_alb_ingress_controller]
@@ -218,6 +235,7 @@ filter.source = "source:aws-alb-ingress-controller"
 
 [[transforms.processing.logs.pipelines.aws_alb_ingress_controller.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.proxysql]
@@ -227,6 +245,7 @@ filter.source = "source:proxysql"
 
 [[transforms.processing.logs.pipelines.proxysql.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.azure]
@@ -236,6 +255,7 @@ filter.source = "source:(azure OR azure.alertsmanagement OR azure.analysisservic
 
 [[transforms.processing.logs.pipelines.azure.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.azure_web]
@@ -245,6 +265,7 @@ filter.source = "source:azure.web"
 
 [[transforms.processing.logs.pipelines.azure_web.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.azure_storage]
@@ -254,6 +275,7 @@ filter.source = "source:azure.storage"
 
 [[transforms.processing.logs.pipelines.azure_storage.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.azure_network]
@@ -263,6 +285,7 @@ filter.source = "source:azure.network"
 
 [[transforms.processing.logs.pipelines.azure_network.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.azure_compute]
@@ -272,6 +295,7 @@ filter.source = "source:azure.compute"
 
 [[transforms.processing.logs.pipelines.azure_compute.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.etcd]
@@ -281,6 +305,7 @@ filter.source = "source:etcd"
 
 [[transforms.processing.logs.pipelines.etcd.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.glog_pipeline]
@@ -290,6 +315,7 @@ filter.source = "source:(admission-webhook OR api-server OR cert-manager-acmesol
 
 [[transforms.processing.logs.pipelines.glog_pipeline.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.auth0]
@@ -299,6 +325,7 @@ filter.source = "source:auth0"
 
 [[transforms.processing.logs.pipelines.auth0.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.kube_scheduler__glog_]
@@ -308,6 +335,7 @@ filter.source = "source:(kube_scheduler OR kube-scheduler)"
 
 [[transforms.processing.logs.pipelines.kube_scheduler__glog_.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.aws_ecs_agent]
@@ -317,6 +345,7 @@ filter.source = "source:amazon-ecs-agent"
 
 [[transforms.processing.logs.pipelines.aws_ecs_agent.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.nodejs]
@@ -326,6 +355,7 @@ filter.source = "source:nodejs"
 
 [[transforms.processing.logs.pipelines.nodejs.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.postgresql]
@@ -335,6 +365,7 @@ filter.source = "source:postgresql"
 
 [[transforms.processing.logs.pipelines.postgresql.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.cassandra]
@@ -344,6 +375,7 @@ filter.source = "source:cassandra"
 
 [[transforms.processing.logs.pipelines.cassandra.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.apache_httpd]
@@ -353,6 +385,7 @@ filter.source = "source:httpd"
 
 [[transforms.processing.logs.pipelines.apache_httpd.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.azure_recovery_services]
@@ -362,6 +395,7 @@ filter.source = "source:azure.recoveryservices"
 
 [[transforms.processing.logs.pipelines.azure_recovery_services.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.c_]
@@ -371,6 +405,7 @@ filter.source = "source:csharp"
 
 [[transforms.processing.logs.pipelines.c_.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 [transforms.processing.logs.pipelines.web_browser_logs]
@@ -380,6 +415,7 @@ filter.source = "source:browser"
 
 [[transforms.processing.logs.pipelines.web_browser_logs.transforms]]
 type = "remap"
+runtime = "vm"
 source = "true"
 
 ##

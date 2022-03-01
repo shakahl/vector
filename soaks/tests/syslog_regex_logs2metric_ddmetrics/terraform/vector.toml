@@ -19,6 +19,7 @@ mode = "tcp"
 
 [transforms.remap]
 type = "remap"
+runtime = "vm"
 inputs = ["syslog"]
 source = ". |= parse_regex!(.host, r'^(?P<hostname>[a-z]+)\\.(?P<tld>[a-z]+)')"
 
