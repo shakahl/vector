@@ -93,7 +93,7 @@ impl HecAckClient {
 
             match ack_query_response {
                 Ok(ack_query_response) => {
-                    debug!(message = "Received ack statuses", ?ack_query_response);
+                    debug!(message = "Received ack statuses.", ?ack_query_response);
                     let acked_ack_ids = ack_query_response
                         .acks
                         .iter()
@@ -139,7 +139,7 @@ impl HecAckClient {
             if let Some((_, ack_event_status_sender)) = self.acks.remove(ack_id) {
                 let _ = ack_event_status_sender.send(EventStatus::Delivered);
                 removed_count += 1.0;
-                debug!(message = "Finalized ack id", ?ack_id);
+                debug!(message = "Finalized ack id.", ?ack_id);
             }
         }
         emit!(&SplunkIndexerAcknowledgementAcksRemoved {
@@ -240,7 +240,7 @@ pub async fn run_acknowledgements(
                 match ack_info {
                     Some((ack_id, tx)) => {
                         ack_client.add(ack_id, tx);
-                        debug!(message = "Stored ack id", ?ack_id);
+                        debug!(message = "Stored ack id.", ?ack_id);
                     },
                     None => break,
                 }
